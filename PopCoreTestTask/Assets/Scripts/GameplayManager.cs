@@ -18,6 +18,14 @@ public class GameplayManager : MonoBehaviour
 
     private static GameplayManager instance = null;
 
+    public GameSettings GameSettings
+    {
+        get
+        {
+            return gameSettings;
+        }
+    }
+
     [SerializeField]
     private GameSettings gameSettings = null;
 }

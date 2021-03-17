@@ -12,8 +12,7 @@ public struct BallSetting
 [CreateAssetMenu(fileName = "GameSettings", menuName = "ScriptableObjects/GameSettings", order = 1)]
 public class GameSettings : ScriptableObject
 {
+    public List<BallSetting> BallSettings;
 
-
-    [SerializeField]
-    private List<BallSetting> BallSettings;
+    public int LevelCompleteScore = 10000;
 }

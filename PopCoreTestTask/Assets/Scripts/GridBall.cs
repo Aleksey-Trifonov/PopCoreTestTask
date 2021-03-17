@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SpawnBall : Ball
+public class GridBall : Ball
 {
 
 }
