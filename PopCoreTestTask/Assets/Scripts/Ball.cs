@@ -25,11 +25,16 @@ public class Ball : MonoBehaviour
     [SerializeField]
     protected TextMesh text = null;
     [SerializeField]
-    private CircleCollider2D collider = null;
+    protected CircleCollider2D circleCollider = null;
 
     public void SetInfo(BallSetting ballSetting)
     {
         image.color = ballSetting.Color;
         text.text = ballSetting.Value.ToString();
+    }
+
+    protected void Merge()
+    {
+        
     }
 }

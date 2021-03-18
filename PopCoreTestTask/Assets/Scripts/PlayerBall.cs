@@ -14,6 +14,7 @@ public class PlayerBall : Ball
     private float travelTime = 1.5f;
 
     private List<Vector3> launchPath = new List<Vector3>();
+    private Tween movementTween = null;
 
     public void CalculateTrajectory(Vector2 direction)
     {
@@ -53,9 +54,18 @@ public class PlayerBall : Ball
 
     public void Launch()
     {
+        circleCollider.enabled = true;
         trajectory.positionCount = 0;
-        transform.DOPath(launchPath.ToArray(), travelTime, PathType.Linear, PathMode.TopDown2D).SetEase(Ease.Linear).
+        movementTween = transform.DOPath(launchPath.ToArray(), travelTime, PathType.Linear, PathMode.TopDown2D).SetEase(Ease.Linear).
             OnComplete(() => CheckIfMatchingBall());
+    }
+
+    public void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.layer == LayerMask.GetMask("Ball"))
+        {
+            
+        }
     }
 
     private void CheckIfMatchingBall()

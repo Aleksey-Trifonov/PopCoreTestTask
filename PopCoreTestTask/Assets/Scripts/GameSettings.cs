@@ -15,4 +15,8 @@ public class GameSettings : ScriptableObject
     public List<BallSetting> BallSettings;
 
     public int LevelCompleteScore = 10000;
+
+    public int InitialRowCount = 3;
+
+    public int RowCountForGameOver = 11;
 }

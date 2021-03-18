@@ -27,7 +27,6 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         SetupPlayerBalls();
-        //spawn grid balls
     }
 
     private void Update()
@@ -62,7 +61,8 @@ public class PlayerController : MonoBehaviour
     private void SpawnStandByBall()
     {
         standbyPlayerBall = Instantiate(playerBallPrefab, standbyBallPosition);
-        standbyPlayerBall.transform.localScale = new Vector3(standbyBallSize, standbyBallSize, standbyBallSize);
+        standbyPlayerBall.transform.localScale = Vector3.zero;
+        standbyPlayerBall.transform.DOScale(standbyBallSize, newBallAppearTimer);
         standbyPlayerBall.SetInfo(GameplayManager.Instance.GameSettings.BallSettings[Random.Range(0, GameplayManager.Instance.GameSettings.BallSettings.Count)]);
     }
 
@@ -77,6 +77,7 @@ public class PlayerController : MonoBehaviour
             OnComplete(() =>
             {
                 activePlayerBall = standbyPlayerBall;
+                activePlayerBall.transform.SetParent(activeBallPosition);
                 activePlayerBall.EventPlayerBallDestroyed += SetNextBall;
                 SpawnStandByBall();
                 isInAimMode = true; //todo change

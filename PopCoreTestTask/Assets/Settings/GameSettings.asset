@@ -29,3 +29,6 @@ MonoBehaviour:
     Color: {r: 0.37647063, g: 0.70980394, b: 0.91372555, a: 1}
   - Value: 256
     Color: {r: 0.40784317, g: 0.5764706, b: 0.8745099, a: 1}
+  LevelCompleteScore: 10000
+  InitialRowCount: 3
+  RowCountForGameOver: 11

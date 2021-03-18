@@ -28,4 +28,9 @@ public class GameplayManager : MonoBehaviour
 
     [SerializeField]
     private GameSettings gameSettings = null;
+
+    private void Start()
+    {
+        GridController.Instance.SpawnInitialRows();
+    }
 }
