@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class GridController : MonoBehaviour
 {
@@ -32,10 +33,11 @@ public class GridController : MonoBehaviour
     private float rowDistance = 0.7f;
 
     private int rowSpawnIndex = 0;
-    private List<GridBall> activeGridBalls = new List<GridBall>();
+    private List<GridBall> lastSpawnedRow = new List<GridBall>();
 
     public void SpawnInitialRows()
     {
+        var initialBalls = new List<GridBall>();
         for (int i = 0; i < GameplayManager.Instance.GameSettings.InitialRowCount; i++)
         {
             var isEvenRow = rowSpawnIndex % 2 == 0;
@@ -44,8 +46,13 @@ public class GridController : MonoBehaviour
                 var gridBall = Instantiate(gridBallPrefab, isEvenRow ? evenRowSpawnTransforms[k] : oddRowSpawnTransforms[k]);
                 gridBall.transform.SetParent(gridBallsParent);
                 gridBall.SetInfo(GameplayManager.Instance.GameSettings.BallSettings[Random.Range(0, GameplayManager.Instance.GameSettings.BallSettings.Count)]);
-                //write logic. Maybe variable with row index
-                //gridBall.SetNeighbours();
+                gridBall.SetGridData(rowSpawnIndex, k);
+                initialBalls.Add(gridBall);
+
+                if (i == GameplayManager.Instance.GameSettings.InitialRowCount - 1)
+                {
+                    lastSpawnedRow.Add(gridBall);
+                }
             }
             rowSpawnIndex++;
 
@@ -54,12 +61,43 @@ public class GridController : MonoBehaviour
                 gridBallsParent.position -= new Vector3(0, rowDistance, 0);
             }
         }
+
+        foreach (var ball in initialBalls)
+        {
+            ball.CollectNeighbours();
+        }
     }
 
     public void SpawnNextRow()
     {
-        rowSpawnIndex++;
-        gridBallsParent.position -= new Vector3(0, rowDistance, 0);
-        var isOddRow = rowSpawnIndex % 2 == 0;
+        var newRow = new List<GridBall>();
+        gridBallsParent.DOMoveY(gridBallsParent.position.y - rowDistance, 1f).OnComplete(() => 
+        {
+            var isEvenRow = rowSpawnIndex % 2 == 0;
+            for (int i = 0; i < ballsPerRow; i++)
+            {
+                var gridBall = Instantiate(gridBallPrefab, isEvenRow ? evenRowSpawnTransforms[i] : oddRowSpawnTransforms[i]);
+                gridBall.transform.SetParent(gridBallsParent);
+                gridBall.SetInfo(GameplayManager.Instance.GameSettings.BallSettings[Random.Range(0, GameplayManager.Instance.GameSettings.BallSettings.Count)]);
+                gridBall.SetGridData(rowSpawnIndex, i);
+                newRow.Add(gridBall);
+            }
+            rowSpawnIndex++;
+
+            foreach (var ball in lastSpawnedRow)
+            {
+                if (ball != null)
+                {
+                    ball.CollectNeighbours();
+                }
+            }
+
+            foreach (var ball in newRow)
+            {
+                ball.CollectNeighbours();
+            }
+
+            lastSpawnedRow = newRow;
+        });
     }
 }

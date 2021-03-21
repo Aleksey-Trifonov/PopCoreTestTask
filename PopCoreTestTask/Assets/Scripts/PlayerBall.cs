@@ -57,20 +57,37 @@ public class PlayerBall : Ball
         circleCollider.enabled = true;
         trajectory.positionCount = 0;
         movementTween = transform.DOPath(launchPath.ToArray(), travelTime, PathType.Linear, PathMode.TopDown2D).SetEase(Ease.Linear).
-            OnComplete(() => CheckIfMatchingBall());
+            OnComplete(() => 
+            { 
+                CheckIfMatchingBall(null);
+                movementTween = null;
+            });
     }
 
     public void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.layer == LayerMask.GetMask("Ball"))
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Ball"))
         {
-            
+            //Debug.Log("Grid ball hit");
+            if (movementTween != null)
+            {
+                movementTween.Kill();
+                movementTween = null;
+                CheckIfMatchingBall(collision.gameObject.GetComponent<GridBall>());
+            }
         }
     }
 
-    private void CheckIfMatchingBall()
+    private void CheckIfMatchingBall(GridBall gridBall)
     {
-        //check for grid balls
+        if (gridBall != null)
+        {
+            //check for grid balls
+        }
+        else
+        {
+            
+        }
         EventPlayerBallDestroyed?.Invoke();
         Destroy(gameObject);
     }

@@ -72,6 +72,7 @@ public class PlayerController : MonoBehaviour
         standbyPlayerBall.transform.DOMove(activeBallPosition.position, newBallAppearTimer).
             OnStart(() =>
             {
+                GridController.Instance.SpawnNextRow(); //wait till all merging
                 standbyPlayerBall.transform.DOScale(new Vector3(activeBallSize, activeBallSize, activeBallSize), newBallAppearTimer);
             }).
             OnComplete(() =>
