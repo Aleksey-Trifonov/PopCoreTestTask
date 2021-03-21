@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+using System.Threading.Tasks;
+using System;
+using Random = UnityEngine.Random;
 
 public class GridController : MonoBehaviour
 {
@@ -19,6 +22,8 @@ public class GridController : MonoBehaviour
 
     private static GridController instance = null;
 
+    public event Action<List<GridBall>> EventInitalBallsSpawned = null;
+
     [SerializeField]
     private GridBall gridBallPrefab = null;
     [SerializeField]
@@ -35,7 +40,7 @@ public class GridController : MonoBehaviour
     private int rowSpawnIndex = 0;
     private List<GridBall> lastSpawnedRow = new List<GridBall>();
 
-    public void SpawnInitialRows()
+    public async void SpawnInitialRows()
     {
         var initialBalls = new List<GridBall>();
         for (int i = 0; i < GameplayManager.Instance.GameSettings.InitialRowCount; i++)
@@ -62,10 +67,14 @@ public class GridController : MonoBehaviour
             }
         }
 
+        await Task.Delay(10);
+
         foreach (var ball in initialBalls)
         {
             ball.CollectNeighbours();
         }
+
+        EventInitalBallsSpawned?.Invoke(initialBalls);
     }
 
     public void SpawnNextRow()

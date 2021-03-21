@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+using System.Threading.Tasks;
+using System.Linq;
 
 public class PlayerBall : Ball
 {
@@ -12,6 +14,12 @@ public class PlayerBall : Ball
     private LineRenderer trajectory = null;
     [SerializeField]
     private float travelTime = 1.5f;
+    [SerializeField]
+    private float collisionSearchradius = 0.7f;
+    [SerializeField]
+    private float pushDuration = 0.2f;
+    [SerializeField]
+    private float pushDistance = 0.3f;
 
     private List<Vector3> launchPath = new List<Vector3>();
     private Tween movementTween = null;
@@ -24,8 +32,6 @@ public class PlayerBall : Ball
         };
 
         var initialHit = Physics2D.Raycast(transform.position, direction.normalized, 10f);
-        //Debug.DrawRay(transform.position, direction.normalized * 10f, Color.red);
-        //Debug.Log(initialHit.collider.gameObject.name);
         if (initialHit)
         {
             trajectoryPositions.Add(initialHit.point);
@@ -34,10 +40,8 @@ public class PlayerBall : Ball
             {
                 var reflectDirection = Vector2.Reflect(direction.normalized, initialHit.normal);
                 var reflectedHit = Physics2D.Raycast(initialHit.point, reflectDirection.normalized, 10f);
-                //Debug.DrawRay(initialHit.point, reflectDirection.normalized * 10f, Color.red);
                 if (reflectedHit)
                 {
-                    //Debug.Log(reflectedHit.collider.gameObject.name);
                     trajectoryPositions.Add(reflectedHit.point);
                 }
             }
@@ -58,9 +62,9 @@ public class PlayerBall : Ball
         trajectory.positionCount = 0;
         movementTween = transform.DOPath(launchPath.ToArray(), travelTime, PathType.Linear, PathMode.TopDown2D).SetEase(Ease.Linear).
             OnComplete(() => 
-            { 
-                CheckIfMatchingBall(null);
+            {
                 movementTween = null;
+                CheckIfCollidedWithMatchingBall();
             });
     }
 
@@ -68,27 +72,67 @@ public class PlayerBall : Ball
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Ball"))
         {
-            //Debug.Log("Grid ball hit");
             if (movementTween != null)
             {
                 movementTween.Kill();
                 movementTween = null;
-                CheckIfMatchingBall(collision.gameObject.GetComponent<GridBall>());
+                CheckIfCollidedWithMatchingBall();
             }
         }
     }
 
-    private void CheckIfMatchingBall(GridBall gridBall)
+    private async void CheckIfCollidedWithMatchingBall()
     {
-        if (gridBall != null)
+        var colliders = Physics2D.OverlapCircleAll(transform.position, collisionSearchradius, ballLayer);
+        var matchingBalls = new List<GridBall>();
+        foreach (var collider in colliders)
         {
-            //check for grid balls
+            if (collider.gameObject == gameObject)
+            {
+                continue;
+            }
+
+            var direction = collider.transform.position - transform.position;
+            collider.transform.DOMove(collider.transform.position + direction.normalized * pushDistance, pushDuration/2f).SetLoops(2, LoopType.Yoyo).SetEase(Ease.Linear);
+
+            var gridBall = collider.GetComponent<GridBall>();
+            if (gridBall.Score == score)
+            {
+                matchingBalls.Add(gridBall);
+            }
+        }
+
+        if (matchingBalls.Count > 1)
+        {
+            Debug.Log("> 1 matching ball");
+            foreach (var matchingBall in matchingBalls)
+            {
+                if (matchingBall.GetMatchingNeighbours(Mathf.Min(score * 2, GameplayManager.Instance.GameSettings.BallSettings.Max(s => s.Value))).Count != 0)
+                {
+                    MergeBalls(matchingBall);
+                    return;
+                }
+            }
+
+            MergeBalls(matchingBalls[0]);
+        }
+        else if (matchingBalls.Count == 1)
+        {
+            Debug.Log("1 matching ball");
+            MergeBalls(matchingBalls[0]);
         }
         else
         {
-            
+            Debug.Log("No matching ball");
+
+            await Task.Delay((int)(pushDuration * 1000));
+
+            Destroy(gameObject);
         }
+    }
+
+    private void OnDestroy()
+    {
         EventPlayerBallDestroyed?.Invoke();
-        Destroy(gameObject);
     }
 }

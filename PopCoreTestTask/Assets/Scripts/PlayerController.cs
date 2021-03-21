@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 using DG.Tweening;
+using System.Collections.Generic;
 
 public class PlayerController : MonoBehaviour
 {
@@ -24,9 +25,17 @@ public class PlayerController : MonoBehaviour
     private PlayerBall standbyPlayerBall = null;
     private bool isInAimMode = false;
 
-    private void Start()
+    private void OnEnable()
     {
-        SetupPlayerBalls();
+        GridController.Instance.EventInitalBallsSpawned += SetupPlayerBalls;
+    }
+
+    private void OnDisable()
+    {
+        if (GridController.Instance != null)
+        {
+            GridController.Instance.EventInitalBallsSpawned -= SetupPlayerBalls;
+        }
     }
 
     private void Update()
@@ -48,10 +57,13 @@ public class PlayerController : MonoBehaviour
 #endif
     }
 
-    private void SetupPlayerBalls()
+    private void SetupPlayerBalls(List<GridBall> initialBalls)
     {
         activePlayerBall = Instantiate(playerBallPrefab, activeBallPosition);
-        activePlayerBall.SetInfo(GameplayManager.Instance.GameSettings.BallSettings[Random.Range(0, GameplayManager.Instance.GameSettings.BallSettings.Count)]);
+        var firstRowBalls = initialBalls.FindAll(b => b.GridData.RowIndex == 0);
+        var randomFirstRowBallValue = firstRowBalls[Random.Range(0, firstRowBalls.Count)].Score;
+        var startingBallSettings = GameplayManager.Instance.GameSettings.BallSettings.Find(s => s.Value == randomFirstRowBallValue);
+        activePlayerBall.SetInfo(startingBallSettings);
         activePlayerBall.EventPlayerBallDestroyed += SetNextBall;
 
         SpawnStandByBall();
@@ -72,7 +84,6 @@ public class PlayerController : MonoBehaviour
         standbyPlayerBall.transform.DOMove(activeBallPosition.position, newBallAppearTimer).
             OnStart(() =>
             {
-                GridController.Instance.SpawnNextRow(); //wait till all merging
                 standbyPlayerBall.transform.DOScale(new Vector3(activeBallSize, activeBallSize, activeBallSize), newBallAppearTimer);
             }).
             OnComplete(() =>

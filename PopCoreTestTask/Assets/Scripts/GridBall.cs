@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
+using System.Linq;
 
 [System.Serializable]
 public struct GridData
@@ -19,16 +21,13 @@ public class GridBall : Ball
         }
     }
 
-    //private List<GridBall> topNeighbours = new List<GridBall>();
-    //private List<GridBall> bottomNeighbours = new List<GridBall>();
-    private List<GridBall> neighbours = new List<GridBall>();
     private GridData gridData = new GridData();
 
-    //public void SetNeighbours(List<GridBall> topNeighboursToAssign, List<GridBall> bottomNeighboursToAssign)
-    //{
-    //    topNeighbours = topNeighboursToAssign;
-    //    bottomNeighbours = bottomNeighboursToAssign;
-    //}
+    [SerializeField]
+    private float neighboursSearchRadius = 0.5f;
+
+    private List<GridBall> neighbours = new List<GridBall>();
+    private bool isInGrid = true;
 
     public void SetGridData(int rowIndex, int rowPosition)
     {
@@ -39,8 +38,7 @@ public class GridBall : Ball
     public void CollectNeighbours()
     {
         neighbours.Clear();
-        var colliders = Physics2D.OverlapCircleAll((Vector2)transform.position, 0.5f, LayerMask.GetMask("Ball"));
-        //Debug.DrawLine(transform.position, transform.position + new Vector3(0, 0.5f, 0), Color.red, 5f);
+        var colliders = Physics2D.OverlapCircleAll(transform.position, neighboursSearchRadius, ballLayer);
         foreach (var collider in colliders)
         {
             if (collider.gameObject == gameObject)
@@ -50,5 +48,63 @@ public class GridBall : Ball
 
             neighbours.Add(collider.gameObject.GetComponent<GridBall>());
         }
+    }
+
+    public List<GridBall> GetMatchingNeighbours(int targetScore)
+    {
+        var matchingBalls = new List<GridBall>();
+
+        foreach (var neighbourBall in neighbours)
+        {
+            if (neighbourBall != null && neighbourBall.isInGrid && neighbourBall.Score == targetScore)
+            {
+                matchingBalls.Add(neighbourBall);
+            }
+        }
+
+        return matchingBalls;
+    }
+
+    public void CheckForNextMerge()
+    {
+        var matchingBalls = GetMatchingNeighbours(score);
+        if (matchingBalls.Count > 1)
+        {
+            foreach (var matchingBall in matchingBalls)
+            {
+                if (matchingBall.GetMatchingNeighbours(Mathf.Min(score * 2, GameplayManager.Instance.GameSettings.BallSettings.Max(s => s.Value))).Count != 0)
+                {
+                    MergeBalls(matchingBall);
+                    return;
+                }
+            }
+
+            MergeBalls(matchingBalls[0]);
+        }
+        else if (matchingBalls.Count == 1)
+        {
+            MergeBalls(matchingBalls[0]);
+        }
+        else
+        {
+            CheckIfIsolated();
+            Destroy(gameObject);
+        }
+    }
+
+    private void CheckIfIsolated()
+    {
+        GridController.Instance.SpawnNextRow();
+    }
+
+    private void Fall()
+    {
+        isInGrid = false;
+        circleCollider.enabled = false;
+        transform.DOMoveY(-5f, Random.Range(1f, 2f)).OnComplete(() =>
+        {
+            //add score?
+            Destroy(gameObject);
+        });
     }
 }
