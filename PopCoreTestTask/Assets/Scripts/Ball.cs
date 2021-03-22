@@ -30,6 +30,7 @@ public class Ball : MonoBehaviour
     protected CircleCollider2D circleCollider = null;
 
     protected int ballLayer = 0;
+    protected bool isInGrid = true;
 
     private void Awake()
     {
@@ -43,15 +44,18 @@ public class Ball : MonoBehaviour
         score = ballSetting.Value;
     }
 
-    protected void MergeBalls(GridBall mergeBall)
+    protected void MergeBalls(GridBall ballToMergeInto)
     {
-        transform.DOMove(mergeBall.transform.position, 0.5f).OnComplete(() =>
+        isInGrid = false;
+        transform.DOMove(ballToMergeInto.transform.position, 0.5f).OnComplete(() =>
         {
             var newData = GameplayManager.Instance.GameSettings.BallSettings.FindAll(d => d.Value <= score * 2).OrderByDescending(d => d.Value).First();
-            mergeBall.SetInfo(newData);
-            //add score
+            ballToMergeInto.SetInfo(newData);
+            GameplayManager.Instance.ChangeComboCounter(true);
+            GameplayManager.Instance.AddScore(ballToMergeInto.Score);
             //spawn particles
-            mergeBall.CheckForNextMerge();
+            //spawn small notification
+            ballToMergeInto.CheckForNextMerge();
             Destroy(gameObject);
         });
     }

@@ -66,20 +66,23 @@ public class PlayerController : MonoBehaviour
         activePlayerBall.SetInfo(startingBallSettings);
         activePlayerBall.EventPlayerBallDestroyed += SetNextBall;
 
-        SpawnStandByBall();
+        SpawnStandByBall(firstRowBalls);
         isInAimMode = true;
     }
 
-    private void SpawnStandByBall()
+    private void SpawnStandByBall(List<GridBall> possibleStandbyBalls)
     {
         standbyPlayerBall = Instantiate(playerBallPrefab, standbyBallPosition);
         standbyPlayerBall.transform.localScale = Vector3.zero;
         standbyPlayerBall.transform.DOScale(standbyBallSize, newBallAppearTimer);
-        standbyPlayerBall.SetInfo(GameplayManager.Instance.GameSettings.BallSettings[Random.Range(0, GameplayManager.Instance.GameSettings.BallSettings.Count)]);
+        var randomBallValue = possibleStandbyBalls[Random.Range(0, possibleStandbyBalls.Count)].Score;
+        var standbyBallSettings = GameplayManager.Instance.GameSettings.BallSettings.Find(s => s.Value == randomBallValue);
+        standbyPlayerBall.SetInfo(standbyBallSettings);
     }
 
     private void SetNextBall()
     {
+        //spawn random ball from first row
         activePlayerBall.EventPlayerBallDestroyed -= SetNextBall;
         standbyPlayerBall.transform.DOMove(activeBallPosition.position, newBallAppearTimer).
             OnStart(() =>

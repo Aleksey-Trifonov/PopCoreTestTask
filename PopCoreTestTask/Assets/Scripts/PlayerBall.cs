@@ -126,6 +126,8 @@ public class PlayerBall : Ball
             Debug.Log("No matching ball");
 
             await Task.Delay((int)(pushDuration * 1000));
+            GameplayManager.Instance.ChangeComboCounter(false);
+            GridController.Instance.SpawnNextRow();
 
             Destroy(gameObject);
         }

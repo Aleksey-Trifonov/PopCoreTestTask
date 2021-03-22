@@ -82,6 +82,7 @@ public class GridController : MonoBehaviour
         var newRow = new List<GridBall>();
         gridBallsParent.DOMoveY(gridBallsParent.position.y - rowDistance, 1f).OnComplete(() => 
         {
+            //check if game over
             var isEvenRow = rowSpawnIndex % 2 == 0;
             for (int i = 0; i < ballsPerRow; i++)
             {

@@ -2041,8 +2041,9 @@ MonoBehaviour:
   currentMultiplier: {fileID: 468225550}
   notification: {fileID: 192196978}
   progressSlider: {fileID: 516007419}
-  currentLevelValue: {fileID: 1713779706}
-  nextLevelValue: {fileID: 1044466095}
+  notificationEndColor: {r: 0.41509432, g: 0.41509432, b: 0.41509432, a: 1}
+  notificationTime: 0.5
+  notificationScale: 1.3
 --- !u!1 &1518269914
 GameObject:
   m_ObjectHideFlags: 0

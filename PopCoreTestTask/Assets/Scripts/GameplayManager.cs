@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -26,11 +27,40 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
+    public event Action<int> EventScoreChanged = null;
+    public event Action<int> EventComboCounterChanged = null;
+
     [SerializeField]
     private GameSettings gameSettings = null;
+
+    private int score = 0;
+    private int comboCounter = 0;
 
     private void Start()
     {
         GridController.Instance.SpawnInitialRows();
+    }
+
+    public void AddScore(int scoreToAdd)
+    {
+        if (comboCounter > 1)
+        {
+            scoreToAdd *= comboCounter;
+        }
+        score += scoreToAdd;
+        EventScoreChanged?.Invoke(score);
+    }
+
+    public void ChangeComboCounter(bool isCombo)
+    {
+        if (isCombo)
+        {
+            comboCounter++;
+        }
+        else
+        {
+            comboCounter = 0;
+        }
+        EventComboCounterChanged?.Invoke(comboCounter);
     }
 }

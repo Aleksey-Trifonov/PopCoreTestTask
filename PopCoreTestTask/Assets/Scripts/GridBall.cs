@@ -27,7 +27,7 @@ public class GridBall : Ball
     private float neighboursSearchRadius = 0.5f;
 
     private List<GridBall> neighbours = new List<GridBall>();
-    private bool isInGrid = true;
+
 
     public void SetGridData(int rowIndex, int rowPosition)
     {
@@ -94,6 +94,7 @@ public class GridBall : Ball
 
     private void CheckIfIsolated()
     {
+        GameplayManager.Instance.ChangeComboCounter(false);
         GridController.Instance.SpawnNextRow();
     }
 

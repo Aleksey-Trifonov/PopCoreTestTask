@@ -2,7 +2,7 @@
 
 public static class StringUtils
 {
-    public static string GetConvertedPriceString(int value)
+    public static string GetConvertedValueString(int value)
     {
         string price = value.ToString();
 
