@@ -25,9 +25,10 @@ public class GridBall : Ball
 
     [SerializeField]
     private float neighboursSearchRadius = 0.5f;
+    [SerializeField]
+    private ScoreVisalizer scoreVisualizerPrefab = null;
 
     private List<GridBall> neighbours = new List<GridBall>();
-
 
     public void SetGridData(int rowIndex, int rowPosition)
     {
@@ -65,6 +66,15 @@ public class GridBall : Ball
         return matchingBalls;
     }
 
+    public void ProcessMerge()
+    {
+        GameplayManager.Instance.ChangeComboCounter(true);
+        GameplayManager.Instance.AddScore(score);
+        var scoreVisualizer = Instantiate(scoreVisualizerPrefab, transform.position, Quaternion.identity);
+        scoreVisualizer.PlayScoreEffects(score * GameplayManager.Instance.ComboCounter);
+        CheckForNextMerge();
+    }
+
     public void CheckForNextMerge()
     {
         var matchingBalls = GetMatchingNeighbours(score);
@@ -94,20 +104,20 @@ public class GridBall : Ball
 
     private void CheckIfIsolated()
     {
+        //add isolation check
         GameplayManager.Instance.ChangeComboCounter(false);
         GridController.Instance.SpawnNextRow();
     }
 
     private void Fall()
     {
+        //add score
         isInGrid = false;
         circleCollider.enabled = false;
-        transform.DOMoveY(-5f, Random.Range(1f, 2f)).OnComplete(() =>
+        transform.DOMoveY(-6f, Random.Range(1f, 2f)).OnComplete(() =>
         {
-            //add score?
-            //audio
-            //particles
-            Destroy(gameObject);
+            var scoreVisualizer = Instantiate(scoreVisualizerPrefab, transform.position, Quaternion.identity);
+            scoreVisualizer.PlayScoreEffects(score);
         });
     }
 

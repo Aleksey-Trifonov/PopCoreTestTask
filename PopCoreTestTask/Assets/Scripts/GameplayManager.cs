@@ -27,6 +27,14 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
+    public int ComboCounter
+    {
+        get
+        {
+            return comboCounter;
+        }
+    }
+
     public event Action<int> EventScoreChanged = null;
     public event Action<int> EventComboCounterChanged = null;
 

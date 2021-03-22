@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using DG.Tweening;
 using System.Linq;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public class Ball : MonoBehaviour
 {
@@ -51,12 +51,7 @@ public class Ball : MonoBehaviour
         {
             var newData = GameplayManager.Instance.GameSettings.BallSettings.FindAll(d => d.Value <= score * 2).OrderByDescending(d => d.Value).First();
             ballToMergeInto.SetInfo(newData);
-            GameplayManager.Instance.ChangeComboCounter(true);
-            GameplayManager.Instance.AddScore(ballToMergeInto.Score);
-            //spawn particles
-            //spawn small notification
-            //play audio
-            ballToMergeInto.CheckForNextMerge();
+            ballToMergeInto.ProcessMerge();
             Destroy(gameObject);
         });
     }

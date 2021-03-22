@@ -155,6 +155,9 @@ MonoBehaviour:
   image: {fileID: 761359418352931966}
   text: {fileID: 761359416534670499}
   circleCollider: {fileID: 761359418352931964}
+  neighboursSearchRadius: 0.5
+  scoreVisualizerPrefab: {fileID: 9017185655993695193, guid: f04b00b151c54414e845a27c63bc31e4,
+    type: 3}
 --- !u!212 &761359418352931966
 SpriteRenderer:
   m_ObjectHideFlags: 0

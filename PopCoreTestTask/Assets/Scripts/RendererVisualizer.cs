@@ -6,9 +6,17 @@ public class RendererVisualizer : MonoBehaviour
     {
         var parent = transform.parent;
 
-        var parentRenderer = parent.GetComponent<Renderer>();
         var renderer = GetComponent<Renderer>();
-        renderer.sortingLayerID = parentRenderer.sortingLayerID;
-        renderer.sortingOrder = parentRenderer.sortingOrder;
+        var parentRenderer = parent.GetComponent<Renderer>();
+        if (parentRenderer != null)
+        {
+            renderer.sortingLayerID = parentRenderer.sortingLayerID;
+            renderer.sortingOrder = parentRenderer.sortingOrder;
+        }
+        else
+        {
+            renderer.sortingLayerID = SortingLayer.NameToID("GameplayObjects");
+            renderer.sortingOrder = 0;
+        }
     }
 }
