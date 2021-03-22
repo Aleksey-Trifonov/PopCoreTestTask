@@ -44,7 +44,7 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_STANDALONE
         if (isInAimMode) 
         {
             var inputPosition = (Vector2)Camera.main.ScreenToWorldPoint(Input.mousePosition);
