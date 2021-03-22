@@ -28,6 +28,8 @@ public class PlayerController : MonoBehaviour
     private void OnEnable()
     {
         GridController.Instance.EventInitalBallsSpawned += SetupPlayerBalls;
+        GridController.Instance.EventNextRowSpawned += SetNextBall;
+        GridController.Instance.EventGameOver += OnGameOver;
     }
 
     private void OnDisable()
@@ -35,6 +37,8 @@ public class PlayerController : MonoBehaviour
         if (GridController.Instance != null)
         {
             GridController.Instance.EventInitalBallsSpawned -= SetupPlayerBalls;
+            GridController.Instance.EventNextRowSpawned -= SetNextBall;
+            GridController.Instance.EventGameOver -= OnGameOver;
         }
     }
 
@@ -61,20 +65,28 @@ public class PlayerController : MonoBehaviour
     {
         activePlayerBall = Instantiate(playerBallPrefab, activeBallPosition);
         var firstRowBalls = initialBalls.FindAll(b => b.GridData.RowIndex == 0);
-        var randomFirstRowBallValue = firstRowBalls[Random.Range(0, firstRowBalls.Count)].Score;
-        var startingBallSettings = GameplayManager.Instance.GameSettings.BallSettings.Find(s => s.Value == randomFirstRowBallValue);
+        var randomFirstBal = firstRowBalls[Random.Range(0, firstRowBalls.Count)];
+        firstRowBalls.Remove(randomFirstBal);
+        var startingBallSettings = GameplayManager.Instance.GameSettings.BallSettings.Find(s => s.Value == randomFirstBal.Score);
         activePlayerBall.SetInfo(startingBallSettings);
-        activePlayerBall.EventPlayerBallDestroyed += SetNextBall;
 
         SpawnStandByBall(firstRowBalls);
         isInAimMode = true;
     }
 
-    private void SpawnStandByBall(List<GridBall> possibleStandbyBalls)
+    private void SpawnStandByBall(List<GridBall> possibleStandbyBalls = null)
     {
         standbyPlayerBall = Instantiate(playerBallPrefab, standbyBallPosition);
         standbyPlayerBall.transform.localScale = Vector3.zero;
         standbyPlayerBall.transform.DOScale(standbyBallSize, newBallAppearTimer);
+        if (possibleStandbyBalls == null)
+        {
+            possibleStandbyBalls = GridController.Instance.GetPossibleBalls();
+            if(possibleStandbyBalls.Count > 1 && possibleStandbyBalls.Find(b => b.Score == activePlayerBall.Score))
+            {
+                possibleStandbyBalls.Remove(possibleStandbyBalls.Find(b => b.Score == activePlayerBall.Score));
+            }
+        }
         var randomBallValue = possibleStandbyBalls[Random.Range(0, possibleStandbyBalls.Count)].Score;
         var standbyBallSettings = GameplayManager.Instance.GameSettings.BallSettings.Find(s => s.Value == randomBallValue);
         standbyPlayerBall.SetInfo(standbyBallSettings);
@@ -82,8 +94,6 @@ public class PlayerController : MonoBehaviour
 
     private void SetNextBall()
     {
-        //spawn random ball from first row
-        activePlayerBall.EventPlayerBallDestroyed -= SetNextBall;
         standbyPlayerBall.transform.DOMove(activeBallPosition.position, newBallAppearTimer).
             OnStart(() =>
             {
@@ -93,9 +103,13 @@ public class PlayerController : MonoBehaviour
             {
                 activePlayerBall = standbyPlayerBall;
                 activePlayerBall.transform.SetParent(activeBallPosition);
-                activePlayerBall.EventPlayerBallDestroyed += SetNextBall;
                 SpawnStandByBall();
-                isInAimMode = true; //todo change
+                isInAimMode = true;
             });
+    }
+
+    private void OnGameOver()
+    {
+        isInAimMode = false;
     }
 }

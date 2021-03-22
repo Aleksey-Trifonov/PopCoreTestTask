@@ -5,6 +5,7 @@ using DG.Tweening;
 using System.Threading.Tasks;
 using System;
 using Random = UnityEngine.Random;
+using System.Linq;
 
 public class GridController : MonoBehaviour
 {
@@ -23,6 +24,8 @@ public class GridController : MonoBehaviour
     private static GridController instance = null;
 
     public event Action<List<GridBall>> EventInitalBallsSpawned = null;
+    public event Action EventNextRowSpawned = null;
+    public event Action EventGameOver = null;
 
     [SerializeField]
     private GridBall gridBallPrefab = null;
@@ -39,6 +42,7 @@ public class GridController : MonoBehaviour
 
     private int rowSpawnIndex = 0;
     private List<GridBall> lastSpawnedRow = new List<GridBall>();
+    private List<GridBall> activeBalls = new List<GridBall>();
 
     public async void SpawnInitialRows()
     {
@@ -53,6 +57,7 @@ public class GridController : MonoBehaviour
                 gridBall.SetInfo(GameplayManager.Instance.GameSettings.BallSettings[Random.Range(0, GameplayManager.Instance.GameSettings.BallSettings.Count)]);
                 gridBall.SetGridData(rowSpawnIndex, k);
                 initialBalls.Add(gridBall);
+                activeBalls.Add(gridBall);
 
                 if (i == GameplayManager.Instance.GameSettings.InitialRowCount - 1)
                 {
@@ -82,7 +87,12 @@ public class GridController : MonoBehaviour
         var newRow = new List<GridBall>();
         gridBallsParent.DOMoveY(gridBallsParent.position.y - rowDistance, 1f).OnComplete(() => 
         {
-            //check if game over
+            if (activeBalls.OrderBy(b => b.GridData.RowIndex).First().gameObject.transform.position.y < -3.5f)
+            {
+                EventGameOver?.Invoke();
+                return;
+            }
+
             var isEvenRow = rowSpawnIndex % 2 == 0;
             for (int i = 0; i < ballsPerRow; i++)
             {
@@ -91,6 +101,7 @@ public class GridController : MonoBehaviour
                 gridBall.SetInfo(GameplayManager.Instance.GameSettings.BallSettings[Random.Range(0, GameplayManager.Instance.GameSettings.BallSettings.Count)]);
                 gridBall.SetGridData(rowSpawnIndex, i);
                 newRow.Add(gridBall);
+                activeBalls.Add(gridBall);
             }
             rowSpawnIndex++;
 
@@ -108,6 +119,30 @@ public class GridController : MonoBehaviour
             }
 
             lastSpawnedRow = newRow;
+
+            EventNextRowSpawned?.Invoke();
         });
+    }
+
+    public List<GridBall> GetPossibleBalls()
+    {
+        var possibleBalls = new List<GridBall>();
+
+        for (int i = 0; i < rowSpawnIndex; i++)
+        {
+            var match = activeBalls.FindAll(b => b.GridData.RowIndex == i);
+            if (match != null && match.Count != 0)
+            {
+                possibleBalls = match;
+                break;
+            }
+        }
+
+        return possibleBalls;
+    }
+
+    public void RemoveGridBall(GridBall gridBall)
+    {
+        activeBalls.Remove(gridBall);
     }
 }

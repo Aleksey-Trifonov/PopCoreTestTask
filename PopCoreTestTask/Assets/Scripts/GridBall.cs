@@ -105,7 +105,17 @@ public class GridBall : Ball
         transform.DOMoveY(-5f, Random.Range(1f, 2f)).OnComplete(() =>
         {
             //add score?
+            //audio
+            //particles
             Destroy(gameObject);
         });
+    }
+
+    private void OnDestroy()
+    {
+        if (GridController.Instance != null)
+        {
+            GridController.Instance.RemoveGridBall(this);
+        }
     }
 }

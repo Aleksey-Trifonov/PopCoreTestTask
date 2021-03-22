@@ -1,6 +1,7 @@
 ﻿using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class GameplayPanel : MonoBehaviour
@@ -11,6 +12,8 @@ public class GameplayPanel : MonoBehaviour
     private TextMeshProUGUI currentMultiplier = null;
     [SerializeField]
     private TextMeshProUGUI notification = null;
+    [SerializeField]
+    private GameObject gameOverPanel = null;
     [SerializeField]
     private Slider progressSlider = null;
     [SerializeField]
@@ -35,12 +38,21 @@ public class GameplayPanel : MonoBehaviour
     {
         GameplayManager.Instance.EventComboCounterChanged += OnComboCounterChanged;
         GameplayManager.Instance.EventScoreChanged += OnScoreChanged;
+        GridController.Instance.EventGameOver += OnGameOver;
     }
 
     private void OnDisable()
     {
-        GameplayManager.Instance.EventComboCounterChanged -= OnComboCounterChanged;
-        GameplayManager.Instance.EventScoreChanged -= OnScoreChanged;
+        if (GameplayManager.Instance != null)
+        {
+            GameplayManager.Instance.EventComboCounterChanged -= OnComboCounterChanged;
+            GameplayManager.Instance.EventScoreChanged -= OnScoreChanged;
+        }
+
+        if (GridController.Instance != null)
+        {
+            GridController.Instance.EventGameOver -= OnGameOver;
+        }
     }
 
     private void OnComboCounterChanged(int comboCounter)
@@ -74,5 +86,15 @@ public class GameplayPanel : MonoBehaviour
     {
         currentScore.text = StringUtils.GetConvertedValueString(score);
         progressSlider.value = score / GameplayManager.Instance.GameSettings.LevelCompleteScore;
+    }
+
+    private void OnGameOver()
+    {
+        gameOverPanel.SetActive(true);
+    }
+
+    public void OnRestartClick()
+    {
+        SceneManager.LoadScene(0);
     }
 }

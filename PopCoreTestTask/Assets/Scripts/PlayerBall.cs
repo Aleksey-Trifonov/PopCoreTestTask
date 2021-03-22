@@ -8,8 +8,6 @@ using System.Linq;
 
 public class PlayerBall : Ball
 {
-    public event Action EventPlayerBallDestroyed = null;
-
     [SerializeField]
     private LineRenderer trajectory = null;
     [SerializeField]
@@ -104,7 +102,6 @@ public class PlayerBall : Ball
 
         if (matchingBalls.Count > 1)
         {
-            Debug.Log("> 1 matching ball");
             foreach (var matchingBall in matchingBalls)
             {
                 if (matchingBall.GetMatchingNeighbours(Mathf.Min(score * 2, GameplayManager.Instance.GameSettings.BallSettings.Max(s => s.Value))).Count != 0)
@@ -118,23 +115,15 @@ public class PlayerBall : Ball
         }
         else if (matchingBalls.Count == 1)
         {
-            Debug.Log("1 matching ball");
             MergeBalls(matchingBalls[0]);
         }
         else
         {
-            Debug.Log("No matching ball");
-
             await Task.Delay((int)(pushDuration * 1000));
             GameplayManager.Instance.ChangeComboCounter(false);
             GridController.Instance.SpawnNextRow();
 
             Destroy(gameObject);
         }
-    }
-
-    private void OnDestroy()
-    {
-        EventPlayerBallDestroyed?.Invoke();
     }
 }
