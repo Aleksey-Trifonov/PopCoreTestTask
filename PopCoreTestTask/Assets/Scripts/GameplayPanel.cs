@@ -57,7 +57,7 @@ public class GameplayPanel : MonoBehaviour
 
     private void OnComboCounterChanged(int comboCounter)
     {
-        if (notificationTween != null)
+        if (notificationTween != null && comboCounter > 1)
         {
             notificationTween.Kill();
             notification.color = Color.clear;

@@ -97,27 +97,46 @@ public class GridBall : Ball
         }
         else
         {
-            CheckIfIsolated();
+            isInGrid = false;
+            GameplayManager.Instance.ChangeComboCounter(false);
+            GridController.Instance.SpawnNextRow();
+            CheckBottomNeighbours();
             Destroy(gameObject);
         }
     }
 
     private void CheckIfIsolated()
     {
-        //add isolation check
-        GameplayManager.Instance.ChangeComboCounter(false);
-        GridController.Instance.SpawnNextRow();
+        var topNeighbours = neighbours.FindAll(n => n != null && n.isInGrid && n.GridData.RowIndex == gridData.RowIndex + 1);
+        if (topNeighbours.Count == 0)
+        {
+            Fall();
+            CheckBottomNeighbours();
+        }
+    }
+
+    private void CheckBottomNeighbours()
+    {
+        var bottomNeighbours = neighbours.FindAll(n => n != null && n.isInGrid && n.GridData.RowIndex == gridData.RowIndex - 1);
+        if (bottomNeighbours.Count > 0)
+        {
+            foreach (var bottomNeighbour in bottomNeighbours)
+            {
+                bottomNeighbour.CheckIfIsolated();
+            }
+        }
     }
 
     private void Fall()
     {
-        //add score
         isInGrid = false;
         circleCollider.enabled = false;
         transform.DOMoveY(-6f, Random.Range(1f, 2f)).OnComplete(() =>
         {
+            GameplayManager.Instance.AddScore(score);
             var scoreVisualizer = Instantiate(scoreVisualizerPrefab, transform.position, Quaternion.identity);
             scoreVisualizer.PlayScoreEffects(score);
+            Destroy(gameObject);
         });
     }
 
